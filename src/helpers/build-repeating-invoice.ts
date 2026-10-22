@@ -36,6 +36,15 @@ export interface RepeatingInvoiceInput {
 
 const isoDate = /^\d{4}-\d{2}-\d{2}$/;
 
+// True only for a real calendar date in YYYY-MM-DD format (rejects 2026-02-30).
+const isCalendarDate = (value: string): boolean => {
+  if (!isoDate.test(value)) {
+    return false;
+  }
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+};
+
 /**
  * Builds the RepeatingInvoice payload for the Xero API and rejects
  * combinations Xero would refuse (or silently ignore).
@@ -43,12 +52,12 @@ const isoDate = /^\d{4}-\d{2}-\d{2}$/;
 export const buildRepeatingInvoice = (
   input: RepeatingInvoiceInput,
 ): RepeatingInvoice => {
-  if (!isoDate.test(input.startDate)) {
-    throw new Error("startDate must be in YYYY-MM-DD format");
+  if (!isCalendarDate(input.startDate)) {
+    throw new Error("startDate must be a real date in YYYY-MM-DD format");
   }
   if (input.endDate !== undefined) {
-    if (!isoDate.test(input.endDate)) {
-      throw new Error("endDate must be in YYYY-MM-DD format");
+    if (!isCalendarDate(input.endDate)) {
+      throw new Error("endDate must be a real date in YYYY-MM-DD format");
     }
     if (input.endDate < input.startDate) {
       throw new Error("endDate must be on or after startDate");
@@ -95,9 +104,8 @@ export const buildRepeatingInvoice = (
       ...(input.endDate ? { endDate: input.endDate } : {}),
     },
     lineItems: input.lineItems,
-    ...(input.lineAmountTypes
-      ? { lineAmountTypes: LineAmountTypes[input.lineAmountTypes] }
-      : {}),
+    // Sent explicitly so the tax treatment never depends on an API default.
+    lineAmountTypes: LineAmountTypes[input.lineAmountTypes ?? "Exclusive"],
     ...(input.reference ? { reference: input.reference } : {}),
     status: RepeatingInvoice.StatusEnum[status],
     ...(input.approvedForSending

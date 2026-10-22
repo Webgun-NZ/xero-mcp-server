@@ -50,7 +50,7 @@ const CreateRepeatingInvoiceTool = CreateXeroTool(
       DAYSAFTERBILLMONTH (days after the end of the invoice month), \
       OFCURRENTMONTH (day of the invoice month), OFFOLLOWINGMONTH (day of the following month)."),
     lineAmountTypes: z.enum(["Exclusive", "Inclusive", "NoTax"]).describe("Whether unit amounts exclude or include tax. \
-      Defaults to the organisation setting.").optional(),
+      Defaults to Exclusive, so tax is added on top of each unit amount.").optional(),
     reference: z.string().describe("A reference for the generated invoices.").optional(),
     status: z.enum(["DRAFT", "AUTHORISED"]).describe("DRAFT saves generated invoices as drafts. \
       AUTHORISED approves them. Defaults to DRAFT.").optional(),

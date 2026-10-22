@@ -36,6 +36,15 @@ describe("buildRepeatingInvoice", () => {
     expect(result.schedule?.startDate).toBe("2026-11-01");
     expect(result.schedule?.endDate).toBeUndefined();
     expect(result.approvedForSending).toBeUndefined();
+    expect(String(result.lineAmountTypes)).toBe("Exclusive");
+  });
+
+  it("keeps an explicit Inclusive tax setting", () => {
+    const result = buildRepeatingInvoice({
+      ...baseInput,
+      lineAmountTypes: "Inclusive",
+    });
+    expect(String(result.lineAmountTypes)).toBe("Inclusive");
   });
 
   it("sets email flags for an approved sales invoice", () => {
@@ -79,10 +88,26 @@ describe("buildRepeatingInvoice", () => {
   it("refuses badly formatted or reversed dates", () => {
     expect(() =>
       buildRepeatingInvoice({ ...baseInput, startDate: "1/11/2026" }),
-    ).toThrow("startDate must be in YYYY-MM-DD format");
+    ).toThrow("startDate must be a real date in YYYY-MM-DD format");
     expect(() =>
       buildRepeatingInvoice({ ...baseInput, endDate: "2026-10-01" }),
     ).toThrow("endDate must be on or after startDate");
+  });
+
+  it("refuses impossible calendar dates and accepts leap days", () => {
+    expect(() =>
+      buildRepeatingInvoice({ ...baseInput, startDate: "2026-02-30" }),
+    ).toThrow("startDate must be a real date");
+    expect(() =>
+      buildRepeatingInvoice({ ...baseInput, startDate: "2026-13-01" }),
+    ).toThrow("startDate must be a real date");
+    expect(() =>
+      buildRepeatingInvoice({ ...baseInput, endDate: "2027-02-29" }),
+    ).toThrow("endDate must be a real date");
+    expect(
+      buildRepeatingInvoice({ ...baseInput, startDate: "2028-02-29" }).schedule
+        ?.startDate,
+    ).toBe("2028-02-29");
   });
 
   it("refuses an invalid period, due date or empty line items", () => {
