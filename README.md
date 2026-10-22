@@ -190,6 +190,7 @@ payroll.timesheets
 - `add-payroll-timesheet-line`: Add new line on an existing Payroll Timesheet
 - `delete-payroll-timesheet`: Delete an existing Payroll Timesheet
 - `delete-repeating-invoice`: Delete a repeating invoice template
+- `delete-invoice`: Delete a draft or awaiting-approval invoice
 - `get-payroll-timesheet`: Retrieve an existing Payroll Timesheet
 
 For detailed API documentation, please refer to the [MCP Protocol Specification](https://modelcontextprotocol.io/).
